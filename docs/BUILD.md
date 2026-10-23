@@ -35,7 +35,7 @@ wear/build/outputs/apk/debug/wear-debug.apk
 
 ## Подпись
 
-Сборки из Releases — debug APK. Локальная сборка получит debug-ключ среды,
+Сборки из Releases — debug APK. Локальная или CI-сборка получит debug-ключ среды,
 который может отличаться от подписи скачанного релиза. Автоматическое обновление
 поверх установленного приложения требует совпадения ключа.
 
@@ -45,7 +45,9 @@ wear/build/outputs/apk/debug/wear-debug.apk
 
 ## Проверки
 
-Сборка обоих APK, JVM-тесты протокола и Android Lint запускаются командами выше.
+Workflow [Android](https://github.com/Hoccku22/WristReader/actions/workflows/android.yml)
+собирает оба APK, запускает JVM-тесты протокола и Android Lint при push и pull request.
+APK и отчёты сохраняются как временные артефакты проверки на 14 дней.
 Постоянные файлы для установки находятся в Releases.
 
 Тесты на физических часах запускаются отдельно. См. [TESTING.md](TESTING.md).

@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/Hoccku22/WristReader/releases/latest"><img src="https://img.shields.io/github/v/release/Hoccku22/WristReader?color=42A5F5&amp;label=release" alt="Latest release"></a>
+  <a href="https://github.com/Hoccku22/WristReader/actions/workflows/android.yml"><img src="https://github.com/Hoccku22/WristReader/actions/workflows/android.yml/badge.svg" alt="Android build"></a>
   <img src="https://img.shields.io/badge/transport-Bluetooth%20only-68E0CE" alt="Bluetooth only">
   <img src="https://img.shields.io/badge/platform-Android%20%2B%20Wear%20OS-9DB8CD" alt="Android and Wear OS">
 </p>
