@@ -67,4 +67,5 @@ INTERNET / Wi-Fi, использование BluetoothSocket RFCOMM. Подро�
 Сборка APK и Android Lint проверяются локально. Добавлен инструментальный тест
 `ReaderUiTest#imagesFillScreenWithoutReaderChrome`: область изображения на весь
 экран, заполнение верхней и нижней части, отсутствие кольца и подписей, меню по касанию.
-Без подключённых часов этот новый тест только компилируется, а не выполняется.
+На Xiaomi Watch 2 Pro (API 34) новый тест выполнен успешно: `OK (1 test)`.
+Повторная проверка `readerModesTextAndPositionOnRoundWatch` также прошла: `OK (1 test)`.
