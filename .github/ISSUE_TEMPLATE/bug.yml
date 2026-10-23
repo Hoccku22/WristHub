@@ -1,0 +1,23 @@
+name: Ошибка
+description: Сообщить о проблеме в WristReader
+title: "[Bug] "
+body:
+  - type: textarea
+    id: devices
+    attributes:
+      label: Устройства и версии
+      description: Модель часов, версия Wear OS / Android, модель телефона, версия WristReader.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Как повторить
+      description: Что делали, что ожидали и что произошло.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Дополнительные сведения
+      description: Тип и размер файла, состояние Bluetooth, снимок экрана без личных данных.

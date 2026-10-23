@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" role="img" aria-labelledby="title desc">
+<title id="title">WristReader</title><desc id="desc">PDF and photos, from your phone to your wrist. Offline reading over Bluetooth.</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#081421"/><stop offset="1" stop-color="#123747"/></linearGradient><linearGradient id="accent"><stop stop-color="#68E0CE"/><stop offset="1" stop-color="#42A5F5"/></linearGradient></defs>
+<rect width="1280" height="440" rx="28" fill="url(#bg)"/>
+<circle cx="1110" cy="-25" r="280" fill="#42A5F5" opacity=".04"/><circle cx="0" cy="465" r="250" fill="#68E0CE" opacity=".04"/>
+<g font-family="Segoe UI,Arial,sans-serif">
+<rect x="66" y="60" width="166" height="30" rx="15" fill="#163C48"/><text x="149" y="81" text-anchor="middle" font-size="13" letter-spacing="2" fill="#8BE6DA">PHONE → WRIST</text>
+<text x="64" y="176" font-size="79" font-weight="700" letter-spacing="-3" fill="#F4F8FC">WristReader</text>
+<text x="69" y="225" font-size="27" fill="#C0D0DE">Your documents. On your wrist.</text>
+<text x="69" y="265" font-size="19" fill="#91A9BC">Bluetooth transfer · PDF &amp; photos · Offline reading</text>
+<rect x="69" y="310" width="108" height="34" rx="17" fill="#68E0CE"/><text x="123" y="332" text-anchor="middle" font-size="15" font-weight="600" fill="#08222B">WEAR OS</text>
+<text x="198" y="332" font-size="16" fill="#A8C1D0">Built for a round screen.</text>
+</g>
+<rect x="925" y="0" width="102" height="440" rx="34" fill="#08121D"/><rect x="924" y="8" width="104" height="424" rx="34" fill="#101F2D"/>
+<rect x="1113" y="205" width="17" height="32" rx="7" fill="#526777"/>
+<circle cx="976" cy="220" r="154" fill="#09131C" stroke="#426174" stroke-width="7"/>
+<circle cx="976" cy="220" r="142" fill="#02070B" stroke="#17354A" stroke-width="3"/>
+<path d="M976,78 A142,142 0 0 1 976,362" fill="none" stroke="url(#accent)" stroke-width="3" stroke-linecap="round"/>
+<rect x="902" y="115" width="148" height="183" rx="3" fill="#F0F5F8"/>
+<rect x="918" y="136" width="91" height="6" rx="3" fill="#274E63"/><rect x="918" y="153" width="116" height="3" rx="1.5" fill="#B6C8D2"/>
+<g fill="#8CA6B5"><rect x="918" y="178" width="112" height="3" rx="1.5"/><rect x="918" y="190" width="108" height="3" rx="1.5"/><rect x="918" y="202" width="116" height="3" rx="1.5"/><rect x="918" y="214" width="86" height="3" rx="1.5"/><rect x="918" y="240" width="112" height="3" rx="1.5"/><rect x="918" y="252" width="104" height="3" rx="1.5"/><rect x="918" y="264" width="90" height="3" rx="1.5"/></g>
+<text x="954" y="331" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" fill="#C1D0DA">25 / 50</text><text x="1011" y="331" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" fill="#C1D0DA">Menu</text>
+</svg>
