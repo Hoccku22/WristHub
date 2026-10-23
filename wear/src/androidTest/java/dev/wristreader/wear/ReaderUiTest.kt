@@ -10,6 +10,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.*
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.wear.compose.material.MaterialTheme
 import dev.wristreader.shared.*
@@ -135,6 +136,43 @@ class ReaderUiTest {
                 assertEquals(ReadingPosition(1,45),prefs.position(id,"textFeed").first())
             }
         } finally { runBlocking { prefs.save(previousSettings) }; root.deleteRecursively() }
+    }
+
+    @Test fun imagesFillScreenWithoutReaderChrome() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val root = File(context.cacheDir,"image-fixture").apply { mkdirs() }
+        val original = File(root,"original")
+        val bitmap = android.graphics.Bitmap.createBitmap(480,240,android.graphics.Bitmap.Config.ARGB_8888)
+        bitmap.eraseColor(Color.BLUE)
+        original.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }
+        bitmap.recycle()
+        val header = Protocol.Header(UUID.randomUUID().toString(),"Landscape.png","image/png",
+            original.length(),0,Protocol.hash(original),ByteArray(32))
+        val doc = Document(root,header)
+        val prefs = ReaderPreferences(context)
+        try {
+            rule.setContent { MaterialTheme {
+                Reader(doc,listOf(doc),prefs,ReaderSettings(margin = 24,progressRing = true),{},{})
+            } }
+            rule.waitUntil(15000) { rule.onAllNodesWithContentDescription("Страница документа").fetchSemanticsNodes().isNotEmpty() }
+            rule.onNodeWithTag("reading-progress").assertDoesNotExist()
+            rule.onNodeWithText("Меню").assertDoesNotExist()
+            rule.onNodeWithText("1 / 1").assertDoesNotExist()
+            val viewport = rule.onNodeWithTag("image-viewport").fetchSemanticsNode().boundsInRoot
+            assertEquals(context.resources.displayMetrics.widthPixels.toFloat(),viewport.width,1f)
+            assertEquals(context.resources.displayMetrics.heightPixels.toFloat(),viewport.height,1f)
+            // Landscape image must cover the top and bottom of the circular screen too.
+            val screen = rule.onRoot().captureToImage().toPixelMap()
+            assertEquals(androidx.compose.ui.graphics.Color.Blue,screen[screen.width / 2,12])
+            assertEquals(androidx.compose.ui.graphics.Color.Blue,screen[screen.width / 2,screen.height - 13])
+            rule.onNodeWithTag("image-viewport").performTouchInput { click() }
+            rule.onNodeWithText("Скрыть").assertExists()
+            rule.onNodeWithText("1:1").assertExists()
+            rule.onNodeWithTag("image-viewport").performTouchInput { click() }
+            rule.onNodeWithText("Скрыть").assertDoesNotExist()
+            rule.onNodeWithTag("reading-progress").assertDoesNotExist()
+            screenshot("image-fullscreen-qa.png")
+        } finally { root.deleteRecursively() }
     }
 
     private fun screenshot(name: String) {

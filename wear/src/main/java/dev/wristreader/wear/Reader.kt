@@ -97,7 +97,7 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
             // Элементы управления накладываются поверх, не сжимая страницу при открытии меню.
             Box(Modifier.fillMaxSize()) {
                 when {
-                    !isPdf -> ImageSlides(doc, images, prefs, settings, locked, reset, !controls,progress)
+                    !isPdf -> ImageSlides(doc, images, prefs, settings, locked, reset, progress) { controls = !controls }
                     loaded.error.isNotEmpty() -> Text("PDF не открыт: ${loaded.error}", Modifier.padding(safeX,safeY))
                     loaded.session == null -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                     mode == "feed" -> Box(Modifier.fillMaxSize().padding(horizontal = safeX, vertical = safeY)) {
@@ -122,7 +122,7 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
                     }
                     }
                 }
-                Row(Modifier.align(Alignment.BottomCenter).offset(x = if (!controls && (!isPdf || mode == "slides")) 24.dp else 0.dp)
+                if (isPdf || controls) Row(Modifier.align(Alignment.BottomCenter).offset(x = if (!controls && (!isPdf || mode == "slides")) 24.dp else 0.dp)
                     .padding(bottom = 8.dp).background(bg),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                     if (controls) {
@@ -132,7 +132,7 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
                     Text(if (controls) "Скрыть" else "Меню", Modifier.clickable { controls = !controls }.padding(6.dp), style = MaterialTheme.typography.caption2)
                 }
                 // Поверх подложек меню, чтобы нижняя часть окружности не прерывалась.
-                if (settings.progressRing) ReadingProgressRing(progress)
+                if (isPdf && settings.progressRing) ReadingProgressRing(progress)
             }
         }
     }
@@ -199,7 +199,7 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
 }
 
 @Composable private fun ImageSlides(doc: Document, images: List<Document>, prefs: ReaderPreferences,
-    s: ReaderSettings, locked: Boolean, reset: Int, showCounter: Boolean, progress: ReadingProgressState) {
+    s: ReaderSettings, locked: Boolean, reset: Int, progress: ReadingProgressState, onTap: () -> Unit) {
     val slides = remember(images,doc) { images.ifEmpty { listOf(doc) } }
     val position = remember(prefs,doc.header.id) { prefs.position(doc.header.id,"images") }
     val restored by position.collectAsState(initial = null)
@@ -217,11 +217,13 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
     val rotary = remember { RotaryPages() }
     val step: (Int) -> Unit = { index = (index + it).coerceIn(0,slides.lastIndex) }
     Box(Modifier.fillMaxSize().rotary { if (!locked) rotary.move(it,s.sensitivity,step) }) {
-        val aspect = load.bitmap?.let { it.width.toFloat() / it.height } ?: 1f
-        RoundPageFrame(aspect,s.margin) {
-            Picture(load, Modifier.fillMaxSize().zoomable("$index/$reset",locked,s.vertical,step))
+        BoxWithConstraints(Modifier.fillMaxSize().clipToBounds().testTag("image-viewport")) {
+            val aspect = load.bitmap?.let { it.width.toFloat() / it.height } ?: 1f
+            val screenAspect = maxWidth.value / maxHeight.value
+            // Заполняем весь экран без искажения пропорций. Края доступны перемещением.
+            val fillScale = if (reset == 0) maxOf(aspect / screenAspect,screenAspect / aspect) else 1f
+            Picture(load, Modifier.fillMaxSize().zoomable("$index/$reset",locked,s.vertical,step,fillScale,onTap,aspect))
         }
-        if (showCounter) Text("${index + 1} / ${slides.size}", Modifier.align(Alignment.BottomCenter).offset(x = (-34).dp).padding(bottom = 14.dp), style = MaterialTheme.typography.caption2)
     }
 }
 

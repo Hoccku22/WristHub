@@ -61,3 +61,10 @@ adb -s WATCH_SERIAL shell am instrument -w -e class 'dev.wristreader.wear.Positi
 
 Техническая основа Bluetooth-only — отсутствие сетевого транспорта и разрешений
 INTERNET / Wi-Fi, использование BluetoothSocket RFCOMM. Подробности в [TRANSPORT.md](TRANSPORT.md).
+
+## Полноэкранные изображения — 1.3
+
+Сборка APK и Android Lint проверяются локально. Добавлен инструментальный тест
+`ReaderUiTest#imagesFillScreenWithoutReaderChrome`: область изображения на весь
+экран, заполнение верхней и нижней части, отсутствие кольца и подписей, меню по касанию.
+Без подключённых часов этот новый тест только компилируется, а не выполняется.
