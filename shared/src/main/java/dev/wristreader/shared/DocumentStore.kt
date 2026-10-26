@@ -22,7 +22,9 @@ class DocumentStore(context: Context, outgoing: Boolean = false) {
         val h = Protocol.Header(j.getString("id"), j.getString("name"), j.getString("mime"),
             j.getLong("size"), j.getLong("textSize"), bytes("hash"), bytes("textHash"))
         h.validate()
-        require(File(dir, "original").length() == h.size && File(dir, "text.txt").length() == h.textSize)
+        val original = File(dir,"original")
+        val text = File(dir,"text.txt")
+        require(original.isFile && text.isFile && original.length() == h.size && text.length() == h.textSize)
         return Document(dir, h)
     }
 

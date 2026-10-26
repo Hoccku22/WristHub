@@ -1,114 +1,105 @@
-<p align="center">
-  <img src="docs/images/hero.svg" alt="WristReader — Your documents. On your wrist." width="100%">
-</p>
+<p align="center"><img src="docs/images/hero.svg" alt="WristHub — Files. Music. Apps. On your wrist." width="100%"></p>
 
 <p align="center">
-  <a href="https://github.com/Hoccku22/WristReader/releases/latest"><img src="https://img.shields.io/github/v/release/Hoccku22/WristReader?color=42A5F5&amp;label=release" alt="Latest release"></a>
-  <a href="https://github.com/Hoccku22/WristReader/actions/workflows/android.yml"><img src="https://github.com/Hoccku22/WristReader/actions/workflows/android.yml/badge.svg" alt="Android build"></a>
+  <a href="https://github.com/Hoccku22/WristHub/releases/latest"><img src="https://img.shields.io/github/v/release/Hoccku22/WristHub?color=42A5F5&amp;label=release" alt="Latest release"></a>
+  <a href="https://github.com/Hoccku22/WristHub/actions/workflows/android.yml"><img src="https://github.com/Hoccku22/WristHub/actions/workflows/android.yml/badge.svg" alt="Android build"></a>
   <img src="https://img.shields.io/badge/transport-Bluetooth%20only-68E0CE" alt="Bluetooth only">
   <img src="https://img.shields.io/badge/platform-Android%20%2B%20Wear%20OS-9DB8CD" alt="Android and Wear OS">
 </p>
 
-<p align="center">
-  <strong>PDF и фотографии со смартфона — на запястье. Читать можно без телефона.</strong><br>
-  Читалка для круглого экрана Xiaomi Watch 2 Pro: свайпы, головка и три режима PDF.<br>
-  Бесплатно, без рекламы, аккаунтов и облачного обмена файлами.
-</p>
+<p align="center"><strong>Личный файловый хаб на запястье.</strong><br>
+Передавай файлы с телефона, слушай музыку, читай PDF и открывай APK на часах.<br>
+Бесплатно, без рекламы, аккаунтов и облачного обмена файлами.</p>
 
-<p align="center">
-  <a href="#скачать">Скачать</a> · <a href="#как-это-работает">Как это работает</a> · <a href="docs/INSTALL.md">Установка</a> · <a href="docs/BUILD.md">Сборка</a> · <a href="CHANGELOG.md">Что нового</a>
-</p>
+<p align="center"><a href="#скачать">Скачать</a> · <a href="docs/INSTALL.md">Установка</a> · <a href="docs/HUB.md">Музыка и APK</a> · <a href="docs/BUILD.md">Сборка</a> · <a href="CHANGELOG.md">Изменения</a></p>
 
 ## Скачать
 
 <p align="center">
-  <a href="https://github.com/Hoccku22/WristReader/releases/latest/download/WristReader-phone.apk"><img src="docs/images/download-phone.svg" alt="Скачать APK для телефона" width="300"></a>
-  <a href="https://github.com/Hoccku22/WristReader/releases/latest/download/WristReader-watch.apk"><img src="docs/images/download-watch.svg" alt="Скачать APK для часов" width="300"></a>
+  <a href="https://github.com/Hoccku22/WristHub/releases/latest/download/WristHub-phone.apk"><img src="docs/images/download-phone.svg" alt="Скачать APK для телефона" width="300"></a>
+  <a href="https://github.com/Hoccku22/WristHub/releases/latest/download/WristHub-watch.apk"><img src="docs/images/download-watch.svg" alt="Скачать APK для часов" width="300"></a>
 </p>
 
-| Файл | Куда установить | Текущая версия |
+| Файл | Устройство | Версия |
 |---|---|---|
-| [WristReader-phone.apk](https://github.com/Hoccku22/WristReader/releases/latest/download/WristReader-phone.apk) | Смартфон, Android 8.0+ | 1.0 |
-| [WristReader-watch.apk](https://github.com/Hoccku22/WristReader/releases/latest/download/WristReader-watch.apk) | Часы, Wear OS на Android 11+ | 1.3 |
+| [WristHub-phone.apk](https://github.com/Hoccku22/WristHub/releases/latest/download/WristHub-phone.apk) | Телефон, Android 8.0+ | 2.0 |
+| [WristHub-watch.apk](https://github.com/Hoccku22/WristHub/releases/latest/download/WristHub-watch.apk) | Часы, Wear OS на Android 11+ | 2.0 |
 
-Все версии и контрольные суммы — в [Releases](https://github.com/Hoccku22/WristReader/releases). APK подписаны debug-ключом: это те же сборки, которые проверялись на устройстве. Они предназначены для самостоятельной установки, не для Google Play.
+**Раньше приложение называлось WristReader.** WristHub обновляется поверх него: библиотека и настройки сохраняются. Для новых типов файлов обнови оба приложения. Внутренние Android-идентификаторы остались прежними для совместимости.
 
-> **Установить на часы с телефона можно без компьютера и команд.**
-> Для этого подойдёт Wear Installer 2. Он использует беспроводную ADB-отладку, поэтому её всё равно нужно включить и выполнить сопряжение. [Пошаговая инструкция →](docs/INSTALL.md)
+APK подписаны прежним debug-ключом. Это сборки для самостоятельной установки; контрольные суммы и исходники находятся в [Releases](https://github.com/Hoccku22/WristHub/releases).
 
-## На экране часов
+## Один хаб — разные файлы
 
-<table>
-  <tr>
-    <td align="center"><img src="docs/images/slides.png" width="230" alt="Постраничный PDF и синее кольцо прогресса"><br><strong>Слайды</strong><br>Страница целиком, свайпы и масштаб</td>
-    <td align="center"><img src="docs/images/feed.png" width="230" alt="Непрерывная лента PDF"><br><strong>Лента</strong><br>Прокрутка без лишних разрывов</td>
-    <td align="center"><img src="docs/images/text.png" width="230" alt="Адаптивный текст с кириллицей"><br><strong>Текст</strong><br>Перенос строк под ширину экрана</td>
-  </tr>
-</table>
+| Раздел | Возможности |
+|---|---|
+| **Файлы** | Любые типы до 512 МиБ, Bluetooth Classic RFCOMM, SHA-256, отмена и повтор |
+| **Музыка** | Локальное аудио, воспроизведение в фоне, пауза, перемотка, очередь, системные медиакнопки |
+| **Приложения** | Передача одиночных APK и запуск системного установщика по нажатию пользователя |
+| **Чтение** | PDF: слайды, лента и адаптивный текст; головка, жесты, сохранение позиции |
+| **Изображения** | Просмотр во весь экран, сохранение пропорций, перемещение, масштаб и меню по касанию |
+| **Библиотека** | Категории «Все», «Чтение», «Музыка», «APK», «Другое», удаление с подтверждением |
 
-<p align="center"><sub>Реальные снимки Xiaomi Watch 2 Pro с демонстрационным документом. Баннер сверху — иллюстрация.</sub></p>
+Сохранить файл можно независимо от того, есть ли на часах приложение для его открытия. Для других типов WristHub предлагает системное «Открыть в приложении».
 
-## Как это работает
+## Как пользоваться
+
+1. Открой WristHub на часах и разреши Bluetooth — приём включится автоматически.
+2. На телефоне выбери сопряжённые часы и любые файлы. Поддерживается системное меню «Поделиться».
+3. Нажми «Отправить» и дождись **«Доставлен ✓»**. Не сворачивай приложение часов до окончания передачи.
+4. Открой файл из библиотеки. Музыка продолжает играть после сворачивания; приём файлов при сворачивании прекращается.
 
 ```text
-Телефон                     Bluetooth RFCOMM                       Часы
-PDF / JPEG / PNG / WebP  ──────────────────────────────────►  Локальная библиотека
-Подготовка текста PDF       Без интернета и Wi-Fi fallback       Чтение офлайн
-                            SHA-256 + подтверждение
+Телефон                 Bluetooth RFCOMM                 Часы
+Любые файлы  ───────────────────────────────────►  Библиотека WristHub
+PDF + текст             SHA-256 + подтверждение     Чтение · Музыка · APK
 ```
 
-1. Открой WristReader на часах. Приём включится автоматически; при первом запуске разреши доступ к Bluetooth.
-2. На телефоне выбери сопряжённые часы и файлы. Можно отправлять через системное меню «Поделиться».
-3. Дождись **«Доставлен ✓»**. Открывай документы из библиотеки часов — дальше телефон не нужен.
+## Установка APK на часах
 
-Пока приложение открыто и приём включён, экран не засыпает. При сворачивании приём прекращается. Если свернуть часы во время передачи, её нужно повторить; незавершённый файл не попадёт в библиотеку.
+Открой переданный APK и нажми **«Установить APK»**. Если Android запросит доступ, разреши WristHub установку из этого источника, вернись и повтори нажатие. Окончательное решение принимает системный установщик.
 
-## Для удобного чтения
+Нужен APK, совместимый с версией Android, процессором и экраном часов. Split APK, APKS, XAPK и пакеты AAB не устанавливаются как одиночный APK. Перенос файла не переносит данные, авторизацию и покупки установленного приложения.
 
-| Возможность | Что умеет WristReader |
-|---|---|
-| **Три режима PDF** | Слайды, вертикальная лента и адаптивный текст |
-| **Головка и жесты** | Перелистывание, прокрутка, увеличение и перемещение страницы |
-| **Круглый экран** | Увеличенная область PDF, меню в нижнем сегменте, безопасные поля текста |
-| **Кольцо прогресса** | Тонкая синяя дуга для PDF от «12 часов»; можно отключить в настройках |
-| **Позиция чтения** | Страница и прокрутка сохраняются между запусками |
-| **Настройки** | Шрифт, интервал, поля, тема, чувствительность головки и направление свайпов |
-| **Изображения** | JPEG, PNG, WebP; во весь экран, меню по касанию, масштабирование и последовательность слайдов |
-| **Надёжная передача** | SHA-256, прогресс, отмена, повтор, проверка свободного места |
+Прошивка может ограничивать установку из приложений или не предоставлять нужный экран разрешений. Тогда файл останется в библиотеке, а для установки потребуется ADB. [Подробнее →](docs/HUB.md)
 
-## Передача — только по Bluetooth
+Для первой установки самого WristHub можно использовать компьютер с ADB или Wear Installer 2 на телефоне. Последний тоже использует беспроводную отладку, но не требует командной строки. [Инструкция →](docs/INSTALL.md)
 
-Используется прямой **Bluetooth Classic RFCOMM**. В приложении нет Data Layer, сетевого резерва, HTTP-клиента и разрешения `INTERNET`. Проверка контрольных сумм и сохранение выполняются до подтверждения доставки. [Как устроен транспорт →](docs/TRANSPORT.md)
+## Музыка без телефона
 
-Wi-Fi может понадобиться **для установки APK через отладку**. К передаче документов внутри WristReader это не относится.
+Выбери аудиофайл в разделе «Музыка». Есть пауза, перемотка на 15 секунд, предыдущий и следующий трек. Очередь составляется из аудиофайлов библиотеки в порядке их отображения. После последнего трека воспроизведение останавливается.
 
-## Совместимость и ограничения
+Плеер работает в отдельной foreground-службе с MediaSession и системным уведомлением. Учитывает audio focus и отключение аудиоустройства. Поддержка конкретного кодека и вывод звука зависят от часов; подключи Bluetooth-наушники или используй доступный системный аудиовыход. Трансляции и стриминга с телефона нет.
 
-- Основное проверенное устройство — **Xiaomi Watch 2 Pro, Android API 34**. Другие часы с Wear OS отдельно не проверялись; доступность RFCOMM зависит от прошивки.
-- Извлечение текста не заменяет OCR: сканы можно смотреть как страницы, а сложные таблицы и колонки могут терять структуру.
-- Максимум: оригинал **512 МиБ**, извлечённый текст **32 МиБ**, запас памяти **8 МиБ**. Проверка потока 20 МиБ есть в JVM-тестах; отдельный тест физической пары с отключённым Wi-Fi пока не зафиксирован.
-- PDF рендерится с ограничением 640 px по ширине и 2048 px по высоте; сильное увеличение не добавляет детализацию.
-- Реальные проверки сборки, рендеринга, rotary input и жизненного цикла приёма описаны в [отчёте о тестировании](docs/TESTING.md).
+## Читалка WristReader осталась внутри
+
+<table><tr>
+<td align="center"><img src="docs/images/slides.png" width="230" alt="Постраничный PDF"><br><strong>Слайды</strong></td>
+<td align="center"><img src="docs/images/feed.png" width="230" alt="Непрерывная лента PDF"><br><strong>Лента</strong></td>
+<td align="center"><img src="docs/images/text.png" width="230" alt="Адаптивный текст"><br><strong>Текст</strong></td>
+</tr></table>
+
+Снимки демонстрационного документа с Xiaomi Watch 2 Pro, сделанные для версии 1.x. PDF сохраняет тонкое синее кольцо прогресса с выключателем в настройках. Изображения открываются без него.
+
+## Совместимость
+
+- Основное устройство проверки — Xiaomi Watch 2 Pro, API 34. Другие прошивки и модели отдельно не проверялись.
+- В приложении нет разрешения `INTERNET`, HTTP-клиента, Data Layer или сетевого резерва. Wi-Fi может понадобиться только для отладочной установки. [Транспорт →](docs/TRANSPORT.md)
+- PDF без OCR: сканы доступны как страницы; извлечённый текст может терять сложную вёрстку. Лимиты: оригинал 512 МиБ, текст 32 МиБ, резерв 8 МиБ.
+- PDF рендерится с ограничением 640 × 2048 px, изображения декодируются с уменьшением больших исходников. Увеличение не добавляет детализацию.
+- Конкретные выполненные проверки и ограничения описаны в [TESTING.md](docs/TESTING.md).
 
 ## Разработчикам
-
-```text
-mobile/   Android · Compose Material 3 · SAF · PDFBox
-wear/     Wear OS · Compose · PdfRenderer · DataStore
-shared/   Bluetooth service · протокол WR01 · SHA-256 · хранилище
-```
 
 **JDK 17 · Kotlin 2.1.10 · Gradle 8.11.1 · Android SDK 35**
 
 ```bash
-./gradlew :mobile:assembleDebug :wear:assembleDebug
+./gradlew :mobile:assembleDebug :wear:assembleDebug :wear:assembleDebugAndroidTest
 ./gradlew :shared:testDebugUnitTest :mobile:lintDebug :wear:lintDebug
 ```
 
-В Windows используй `gradlew.bat`. [Полная инструкция сборки →](docs/BUILD.md)
+На Windows используй `gradlew.bat`. [Подробности сборки →](docs/BUILD.md)
 
-## Обратная связь
+`mobile/` — выбор и подготовка файлов, `wear/` — библиотека, читалка, плеер и действия с файлами, `shared/` — протокол WR01, Bluetooth и хранилище.
 
-Нашёл ошибку? [Создай issue](https://github.com/Hoccku22/WristReader/issues/new/choose) и укажи модель часов, версию Android/Wear OS и действия перед сбоем. Пожелания по чтению и управлению тоже можно предложить через Issues.
-
-Сторонние компоненты и их лицензии перечислены в [THIRD_PARTY.md](docs/THIRD_PARTY.md). Отдельная лицензия на переиспользование исходников пока не выбрана.
+[Сообщить об ошибке](https://github.com/Hoccku22/WristHub/issues/new/choose) · [Сторонние компоненты](docs/THIRD_PARTY.md). Отдельная лицензия на переиспользование исходников пока не выбрана.

@@ -73,13 +73,7 @@ class MobileModel(app: Application) : AndroidViewModel(app) {
                             } } ?: error("Нет доступа к файлу")
                             val signature = ByteArray(12)
                             original.inputStream().use { it.read(signature) }
-                            val mime = when {
-                                signature.take(5).toByteArray().toString(Charsets.US_ASCII) == "%PDF-" -> "application/pdf"
-                                signature[0] == 0xff.toByte() && signature[1] == 0xd8.toByte() -> "image/jpeg"
-                                signature.take(8).toByteArray().contentEquals(byteArrayOf(0x89.toByte(),0x50,0x4e,0x47,13,10,26,10)) -> "image/png"
-                                String(signature, 0, 4, Charsets.US_ASCII) == "RIFF" && String(signature,8,4,Charsets.US_ASCII) == "WEBP" -> "image/webp"
-                                else -> error("Поддерживаются PDF, JPEG, PNG, WebP")
-                            }
+                            val mime = FileTypes.detect(name,resolver.getType(uri),signature)
                             val text = File(dir, "text.txt").apply { writeText("") }
                             if (mime == "application/pdf") {
                                 try {
@@ -155,8 +149,8 @@ class MainActivity : ComponentActivity() {
         }
         Surface(Modifier.fillMaxSize()) {
             LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                item { Text("WristReader", style = MaterialTheme.typography.headlineLarge) }
-                item { Text("Документы на запястье", style = MaterialTheme.typography.titleMedium) }
+                item { Text("WristHub", style = MaterialTheme.typography.headlineLarge) }
+                item { Text("Файлы, музыка и приложения на запястье", style = MaterialTheme.typography.titleMedium) }
                 item { Text(remember(refresh) { BluetoothAccess.status(this@MainActivity) }) }
                 item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = { authorize() }) { Text("Разрешения") }
@@ -166,15 +160,15 @@ class MainActivity : ComponentActivity() {
                         else authorize()
                     }) { Text("Включить BT") }
                 } }
-                item { Text("1. Откройте WristReader на часах и включите приём.\n2. Выберите сопряжённые часы.") }
+                item { Text("1. Откройте WristHub на часах — приём включится сам.\n2. Выберите сопряжённые часы.\nДля APK и музыки обновите оба приложения до 2.0.") }
                 items(devices, key = { it.address }) { device ->
                     FilterChip(selected = address == device.address, onClick = { address = device.address },
                         label = { Text("${device.name ?: "Bluetooth"} • ${device.address}") })
                 }
                 if (devices.isEmpty()) item { Text("Нет сопряжённых устройств. Выполните сопряжение в системных настройках Bluetooth, затем вернитесь сюда.") }
                 item { Button(enabled = !model.preparing && !current.running,
-                    onClick = { picker.launch(arrayOf("application/pdf", "image/jpeg", "image/png", "image/webp")) }) { Text("Выбрать файлы") } }
-                if (model.preparing) item { LinearProgressIndicator(Modifier.fillMaxWidth()); Text("Подготовка и извлечение текста…"); TextButton(onClick = { model.cancelImport() }) { Text("Отменить") } }
+                    onClick = { picker.launch(arrayOf("*/*")) }) { Text("Выбрать файлы") } }
+                if (model.preparing) item { LinearProgressIndicator(Modifier.fillMaxWidth()); Text("Подготовка файлов…"); TextButton(onClick = { model.cancelImport() }) { Text("Отменить") } }
                 if (model.message.isNotEmpty()) item { Text(model.message, color = MaterialTheme.colorScheme.tertiary) }
                 item {
                     Text(current.message)
@@ -187,7 +181,7 @@ class MainActivity : ComponentActivity() {
                 items(model.documents, key = { it.header.id }) { doc ->
                     Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
                         Text(doc.header.name, style = MaterialTheme.typography.titleMedium)
-                        Text("${size(doc.header.size)} • ${doc.header.mime.substringAfter('/')}")
+                        Text("${size(doc.header.size)} • ${FileTypes.label(doc.header.mime)}")
                         Text(results[doc.header.id] ?: "Готов к отправке")
                         Row {
                             TextButton(enabled = !current.running && address.isNotEmpty() && !model.preparing,

@@ -1,7 +1,7 @@
 # Bluetooth-транспорт
 
 Решение: защищённый Bluetooth Classic RFCOMM. Часы открывают
-`listenUsingRfcommWithServiceRecord("WristReader", UUID)`, телефон вызывает
+`listenUsingRfcommWithServiceRecord("WristHub", UUID)`, телефон вызывает
 `createRfcommSocketToServiceRecord(UUID).connect()`. UUID приложения:
 `1826c0e3-39dc-483b-a833-70dccd7ecf21`.
 
@@ -69,5 +69,9 @@ Java DataOutputStream, big-endian:
 нельзя: нужна проверенная поддержка прошивки или новая Bluetooth-only реализация.
 
 ADB по Wi-Fi может использоваться для установки и диагностики; он не является
-транспортом файлов WristReader. Проверка обмена выполняется отдельно с Wi-Fi,
+транспортом файлов WristHub. Проверка обмена выполняется отдельно с Wi-Fi,
 мобильными данными и ADB, отключёнными на обоих устройствах.
+
+## WristHub 2.0
+
+WR01 и UUID сохранены. Допускаются произвольные корректные MIME-типы до 127 ASCII-символов; все лимиты, SHA-256 и атомарное сохранение прежние. Старая версия 1.x отвергает новые типы до передачи тела, поэтому для APK и аудио обновляются обе стороны. Полученные файлы не запускаются автоматически.

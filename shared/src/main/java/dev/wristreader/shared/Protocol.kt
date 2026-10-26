@@ -13,15 +13,14 @@ object Protocol {
     const val READY = 1
     const val COMMITTED = 2
     const val REJECTED = 3
-    val types = setOf("application/pdf", "image/jpeg", "image/png", "image/webp")
 
     data class Header(val id: String, val name: String, val mime: String, val size: Long,
                       val textSize: Long, val hash: ByteArray, val textHash: ByteArray) {
         fun validate() {
             require(UUID.fromString(id).toString() == id) { "Неверный идентификатор" }
             require(name.isNotBlank() && name.length <= 240 && name.none { it.isISOControl() }) { "Неверное имя" }
-            require(mime in types) { "Формат не поддерживается" }
-            require(size in 1..MAX_FILE && textSize in 0..MAX_TEXT) { "Размер вне допустимых пределов" }
+            require(FileTypes.validMime(mime)) { "Неверный тип файла" }
+            require(size in 0..MAX_FILE && textSize in 0..MAX_TEXT) { "Размер вне допустимых пределов" }
             require(hash.size == 32 && textHash.size == 32) { "Неверный SHA-256" }
             require(mime == "application/pdf" || textSize == 0L) { "Текст допустим только для PDF" }
         }
@@ -36,7 +35,7 @@ object Protocol {
     }
 
     fun readHeader(input: DataInputStream): Header {
-        require(input.readInt() == 0x57523031) { "Несовместимая версия WristReader" }
+        require(input.readInt() == 0x57523031) { "Несовместимая версия протокола WristHub" }
         return Header(input.readUTF(), input.readUTF(), input.readUTF(), input.readLong(), input.readLong(),
             ByteArray(32).also { input.readFully(it) }, ByteArray(32).also { input.readFully(it) }).also { it.validate() }
     }

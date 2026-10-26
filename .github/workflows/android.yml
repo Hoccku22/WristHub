@@ -26,16 +26,16 @@ jobs:
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - name: Android SDK 35
-        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"' 
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"'
       - name: Build, tests and lint
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --console=plain :mobile:assembleDebug :wear:assembleDebug :shared:testDebugUnitTest :mobile:lintDebug :wear:lintDebug
+          ./gradlew --no-daemon --console=plain :mobile:assembleDebug :wear:assembleDebug :wear:assembleDebugAndroidTest :shared:testDebugUnitTest :mobile:lintDebug :wear:lintDebug
       - name: APK and reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: wristreader-ci
+          name: wristhub-ci
           retention-days: 14
           path: |
             mobile/build/outputs/apk/debug/*.apk

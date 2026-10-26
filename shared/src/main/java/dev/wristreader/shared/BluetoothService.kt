@@ -63,7 +63,7 @@ class BluetoothService : Service() {
         val stop = PendingIntent.getService(this, 1, Intent(this, BluetoothService::class.java).setAction("STOP"),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val n = NotificationCompat.Builder(this, "transfer").setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
-            .setContentTitle("WristReader • Bluetooth").setContentText(t.message)
+            .setContentTitle("WristHub • Bluetooth").setContentText(t.message)
             .setOngoing(true).addAction(0, "Остановить", stop)
         if (t.total > 0) n.setProgress(100, (100 * t.done / t.total).toInt(), false)
         startForeground(17, n.build())
@@ -156,7 +156,7 @@ class BluetoothService : Service() {
     private fun receive(adapter: BluetoothAdapter) {
         val store = DocumentStore(this)
         store.cleanup()
-        server = adapter.listenUsingRfcommWithServiceRecord("WristReader", Protocol.SERVICE_UUID)
+        server = adapter.listenUsingRfcommWithServiceRecord("WristHub", Protocol.SERVICE_UUID)
         while (!cancelled) {
             report(Transfer(message = "Приём включён • ожидаю телефон", running = true))
             val s = server!!.accept()

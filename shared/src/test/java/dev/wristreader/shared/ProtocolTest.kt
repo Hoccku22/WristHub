@@ -77,7 +77,7 @@ class ProtocolTest {
     @Test fun maliciousHeadersRejected() {
         val h = header(byteArrayOf(1))
         for (bad in listOf(h.copy(id = "../../x"), h.copy(size = -1), h.copy(size = Protocol.MAX_FILE + 1),
-            h.copy(textSize = Long.MAX_VALUE), h.copy(name = "x\nx"), h.copy(mime = "application/zip"))) {
+            h.copy(textSize = Long.MAX_VALUE), h.copy(name = "x\nx"), h.copy(mime = "application/\nzip"), h.copy(mime = "*/*"))) {
             assertThrows(IllegalArgumentException::class.java) { bad.validate() }
         }
     }
@@ -92,5 +92,39 @@ class ProtocolTest {
             assertArrayEquals(expected, File(temp,"original").readBytes())
         }
         assertEquals(-1, input.read())
+    }
+
+    @Test fun arbitraryFilesPreserveBytesAndMime() {
+        for (mime in listOf(FileTypes.APK,"audio/mpeg","application/zip",FileTypes.BINARY,"text/plain")) {
+            val bytes = ByteArray(8192) { (it % 251).toByte() }
+            val h = header(bytes,mime = mime)
+            val wire = ByteArrayOutputStream()
+            Protocol.writeHeader(DataOutputStream(wire),h)
+            val decoded = Protocol.readHeader(DataInputStream(ByteArrayInputStream(wire.toByteArray())))
+            assertEquals(mime,decoded.mime)
+            val temp = folder.newFolder()
+            VerifiedPayload.receive(ByteArrayInputStream(bytes),temp,decoded)
+            assertArrayEquals(bytes,File(temp,"original").readBytes())
+            assertEquals(0L,File(temp,"text.txt").length())
+        }
+    }
+
+    @Test fun fileDetectionKeepsKnownReadersAndNormalizesOtherTypes() {
+        assertEquals("application/pdf",FileTypes.detect("file.bin",null,"%PDF-test".toByteArray()))
+        assertEquals(FileTypes.APK,FileTypes.detect("App.APK","application/zip",byteArrayOf(80,75)))
+        assertEquals("audio/mpeg",FileTypes.detect("Song.MP3",FileTypes.BINARY,byteArrayOf()))
+        assertEquals(FileTypes.BINARY,FileTypes.detect("file.unknown","*/*",byteArrayOf()))
+        assertEquals(FileTypes.BINARY,FileTypes.detect("file.unknown","text/plain\nInjected",byteArrayOf()))
+        assertEquals("application/zip",FileTypes.detect("backup.zip",null,byteArrayOf()))
+        assertFalse(FileTypes.isReadable("audio/mpeg"))
+        assertTrue(FileTypes.isReadable("image/png"))
+    }
+
+    @Test fun emptyGenericFileIsCommittedAsRealFiles() {
+        val temp = folder.newFolder()
+        VerifiedPayload.receive(ByteArrayInputStream(byteArrayOf()),temp,header(byteArrayOf(),mime = FileTypes.BINARY))
+        assertTrue(File(temp,"original").isFile)
+        assertTrue(File(temp,"text.txt").isFile)
+        assertEquals(0L,File(temp,"original").length())
     }
 }

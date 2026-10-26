@@ -45,7 +45,7 @@ wear/build/outputs/apk/debug/wear-debug.apk
 
 ## Проверки
 
-Workflow [Android](https://github.com/Hoccku22/WristReader/actions/workflows/android.yml)
+Workflow [Android](https://github.com/Hoccku22/WristHub/actions/workflows/android.yml)
 собирает оба APK, запускает JVM-тесты протокола и Android Lint при push и pull request.
 APK и отчёты сохраняются как временные артефакты проверки на 14 дней.
 Постоянные файлы для установки находятся в Releases.
