@@ -37,7 +37,7 @@ import androidx.wear.compose.material.*
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Button(onClick = onConfirm,modifier = Modifier.size(46.dp).testTag("confirm-file-delete").semantics { contentDescription = "Удалить файл" },colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFAD3348))) {
-                            Icon(painterResource(android.R.drawable.ic_menu_delete),contentDescription = null,modifier = Modifier.size(22.dp))
+                            WatchIcon("trash",Modifier.size(22.dp))
                         }
                         Text("Удалить",style = MaterialTheme.typography.caption3,modifier = Modifier.padding(top = 3.dp))
                     }

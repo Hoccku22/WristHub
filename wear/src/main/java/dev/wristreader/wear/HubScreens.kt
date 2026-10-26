@@ -32,43 +32,6 @@ enum class HubFilter(val label: String) {
     }
 }
 
-@Composable fun MusicScreen(doc: Document, onClose: () -> Unit) {
-    val context = LocalContext.current
-    val state by MusicPlayback.state.collectAsState()
-    var error by remember { mutableStateOf("") }
-    fun command(action: String, position: Long? = null) {
-        runCatching { MusicPlayback.command(context,action,position = position) }
-            .onFailure { error = it.message ?: "Не удалось запустить плеер" }
-    }
-    LaunchedEffect(doc.header.id) {
-        if (state.id != doc.header.id) runCatching { MusicPlayback.command(context,"PLAY",doc.header.id) }
-            .onFailure { error = it.message ?: "Не удалось запустить плеер" }
-    }
-    BackHandler(onBack = onClose)
-    HubList {
-        item { Text("Музыка",style = MaterialTheme.typography.title2) }
-        item { Text(state.name.ifBlank { doc.header.name },maxLines = 3) }
-        item { Text(if (state.loading) "Загрузка…" else "${trackTime(state.position)} / ${trackTime(state.duration)}",Modifier.testTag("music-time")) }
-        if (state.message.isNotEmpty()) item { Text(state.message) }
-        if (error.isNotEmpty()) item { Text(error) }
-        item { Chip(onClick = {
-            if (state.id.isEmpty()) runCatching { MusicPlayback.command(context,"PLAY",doc.header.id) }.onFailure { error = it.message ?: "Ошибка" }
-            else command(if (state.playing || state.loading) "PAUSE" else "PLAY")
-        },label = { Text(if (state.playing || state.loading) "Пауза" else "Играть") }) }
-        item { Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            CompactChip(onClick = { command("SEEK",state.position - 15000) },label = { Text("−15 с") },modifier = Modifier.weight(1f))
-            CompactChip(onClick = { command("SEEK",state.position + 15000) },label = { Text("+15 с") },modifier = Modifier.weight(1f))
-        } }
-        item { CompactChip(onClick = { command("PREVIOUS") },label = { Text("Предыдущий трек") }) }
-        item { CompactChip(onClick = { command("NEXT") },label = { Text("Следующий трек") }) }
-        item { CompactChip(onClick = { command("STOP") },label = { Text("Остановить") }) }
-        item { Text("Музыка продолжает играть в фоне",style = MaterialTheme.typography.caption2) }
-        item { CompactChip(onClick = onClose,label = { Text("К файлам") }) }
-    }
-}
-
-private fun trackTime(ms: Long): String = "%d:%02d".format(ms / 60000,(ms / 1000) % 60)
-
 @Suppress("DEPRECATION")
 @Composable fun FileScreen(doc: Document, onClose: () -> Unit) {
     val context = LocalContext.current
@@ -110,7 +73,7 @@ private fun trackTime(ms: Long): String = "%d:%02d".format(ms / 60000,(ms / 1000
         item { Chip(onClick = { launch() },enabled = !apk || (packageLabel != null && packageLabel != "Некорректный APK"),
             label = { Text(if (apk) "Установить APK" else "Открыть в приложении") }) }
         if (message.isNotEmpty()) item { Text(message) }
-        item { CompactChip(onClick = onClose,label = { Text("К файлам") }) }
+        item { CompactChip(onClick = onClose,label = { Text("К файлам") },colors = ChipDefaults.chipColors(backgroundColor = WatchPanel)) }
     }
 }
 

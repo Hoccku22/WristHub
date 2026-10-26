@@ -75,11 +75,11 @@ class HubTest {
             waitFor { MusicPlayback.state.value.id == doc.header.id && MusicPlayback.state.value.playing }
             waitFor { MusicPlayback.state.value.position > 400 }
             assertTrue(MusicPlayback.state.value.duration >= 29000)
-            MusicPlayback.command(context,"PAUSE")
+            rule.onNodeWithTag("music-play-pause").performClick()
             waitFor { !MusicPlayback.state.value.playing }
             MusicPlayback.command(context,"SEEK",position = 10000)
             waitFor { MusicPlayback.state.value.position >= 9000 }
-            MusicPlayback.command(context,"PLAY")
+            rule.onNodeWithTag("music-play-pause").performClick()
             waitFor { MusicPlayback.state.value.playing }
             val before = MusicPlayback.state.value.position
             InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand("input keyevent KEYCODE_HOME").close()

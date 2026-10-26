@@ -15,6 +15,7 @@ import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,7 +42,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         musicRequested = intent.getBooleanExtra("music",false)
-        setContent { MaterialTheme { App() } }
+        setContent { WatchTheme { App() } }
     }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -97,12 +98,15 @@ class MainActivity : ComponentActivity() {
         var documents by remember { mutableStateOf<List<Document>>(emptyList()) }
         var free by remember { mutableLongStateOf(0) }
         var opened by remember { mutableStateOf<Document?>(null) }
-        var filter by remember { mutableStateOf(HubFilter.ALL) }
+        var filter by rememberSaveable { mutableStateOf(HubFilter.ALL) }
+        var inLibrary by rememberSaveable { mutableStateOf(false) }
         val music by MusicPlayback.state.collectAsState()
         LaunchedEffect(musicRequested,documents) {
             if (musicRequested && documents.isNotEmpty()) {
                 showSettings = false
                 opened = documents.firstOrNull { it.header.id == music.id }
+                inLibrary = true
+                filter = HubFilter.MUSIC
                 musicRequested = false
             }
         }
@@ -123,51 +127,20 @@ class MainActivity : ComponentActivity() {
             }
             return
         }
-        val visible = remember(documents,filter) { documents.filter { filter.accepts(it) } }
-        val state = rememberScalingLazyListState()
-        val scaling = remember { ScalingLazyColumnDefaults.scalingParams(edgeScale = 0.92f,edgeAlpha = 1f) }
-        val freeLabel = remember(free) { "Свободно: ${"%.0f".format(free / 1048576.0)} МиБ" }
-        Scaffold(positionIndicator = { PositionIndicator(scalingLazyListState = state) }) {
-            ScalingLazyColumn(state = state, modifier = Modifier.fillMaxSize().rotary { delta -> scope.launch { state.scrollBy(delta * settings.sensitivity) } },
-                scalingParams = scaling,
-                contentPadding = PaddingValues(horizontal = 26.dp, vertical = 40.dp)) {
-                item { Text("WristHub", style = MaterialTheme.typography.title2) }
-                if (music.id.isNotEmpty()) item { CompactChip(onClick = {
-                    opened = documents.firstOrNull { it.header.id == music.id }
-                },label = { Text(if (music.playing) "▶ Сейчас играет" else "Музыкальный плеер") }) }
-                item { CompactChip(onClick = { showSettings = true }, label = { Text("Настройки") }) }
-                item { Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    CompactChip(onClick = { filter = HubFilter.ALL },label = { Text("Все") },modifier = Modifier.weight(1f))
-                    CompactChip(onClick = { filter = HubFilter.READING },label = { Text("Чтение") },modifier = Modifier.weight(1f))
-                } }
-                item { Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    CompactChip(onClick = { filter = HubFilter.MUSIC },label = { Text("Музыка") },modifier = Modifier.weight(1f))
-                    CompactChip(onClick = { filter = HubFilter.APPS },label = { Text("APK") },modifier = Modifier.weight(1f))
-                } }
-                item { CompactChip(onClick = { filter = HubFilter.OTHER },label = { Text("Другое") }) }
-                item { Text("${filter.label}: ${visible.size}") }
-                item { Text(freeLabel) }
-                item { Text(remember(refresh) { BluetoothAccess.status(this@MainActivity) }) }
-                item { Chip(onClick = {
-                    if (transfer.running) {
-                        receiveEnabled = false
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                        stopService(Intent(this@MainActivity,BluetoothService::class.java))
-                    } else { receiveEnabled = true; receive(manual = true) }
-                }, label = { Text(if (transfer.running) "Выключить приём" else "Включить приём") }) }
-                item { Text(transfer.message) }
-                if (transfer.total > 0) item { Text("${transfer.done * 100 / transfer.total}% • ${"%.1f".format(transfer.total / 1048576.0)} МиБ") }
-                if (error.isNotEmpty()) item { Text(error) }
-                if (documents.isEmpty()) item { Text("Откройте WristHub на телефоне и отправьте файлы, музыку или APK") }
-                items(visible.size, key = { visible[it].header.id }) { index ->
-                    val doc = visible[index]
-                    Column {
-                        Chip(onClick = { opened = doc }, label = { Text(doc.header.name, maxLines = 2) },
-                            secondaryLabel = { Text(FileTypes.label(doc.header.mime)) })
-                        CompactChip(onClick = { deleting = doc }, label = { Text("Удалить") })
-                    }
-                }
-            }
+        if (inLibrary) {
+            WatchLibrary(documents,filter,free,settings.sensitivity,onClose = { inLibrary = false },
+                onOpen = { opened = it },onDelete = { deleting = it })
+        } else {
+            WatchHome(transfer.running,transfer,error,music.playing,music.id.isNotEmpty(),onReceive = {
+                if (transfer.running) {
+                    receiveEnabled = false
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    stopService(Intent(this@MainActivity,BluetoothService::class.java))
+                } else { receiveEnabled = true; receive(manual = true) }
+            },onSection = { filter = it; inLibrary = true },onSettings = { showSettings = true },onMusic = {
+                filter = HubFilter.MUSIC; inLibrary = true
+                opened = documents.firstOrNull { it.header.id == music.id }
+            })
         }
         deleting?.let { target ->
             DeleteFileDialog(target.header.name,onDismiss = { deleting = null },onConfirm = {
@@ -175,7 +148,7 @@ class MainActivity : ComponentActivity() {
                 if (music.id == target.header.id) MusicPlayback.command(this@MainActivity,"STOP")
                 scope.launch {
                     val removed = withContext(Dispatchers.IO) { target.directory.deleteRecursively() }
-                    if (!removed) error = "Не удалось удалить файл"
+                    if (!removed) android.widget.Toast.makeText(this@MainActivity,"Не удалось удалить файл",android.widget.Toast.LENGTH_LONG).show()
                     refresh++
                 }
             })
