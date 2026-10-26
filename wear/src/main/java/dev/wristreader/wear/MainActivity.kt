@@ -167,16 +167,18 @@ class MainActivity : ComponentActivity() {
                         CompactChip(onClick = { deleting = doc }, label = { Text("Удалить") })
                     }
                 }
-                if (deleting != null) {
-                    item { Text("Удалить ${deleting!!.header.name}?") }
-                    item { Chip(onClick = {
-                        val target = deleting!!; deleting = null
-                        if (music.id == target.header.id) MusicPlayback.command(this@MainActivity,"STOP")
-                        scope.launch { withContext(Dispatchers.IO) { target.directory.deleteRecursively() }; refresh++ }
-                    }, label = { Text("Да, удалить") }) }
-                    item { CompactChip(onClick = { deleting = null }, label = { Text("Отмена") }) }
-                }
             }
+        }
+        deleting?.let { target ->
+            DeleteFileDialog(target.header.name,onDismiss = { deleting = null },onConfirm = {
+                deleting = null
+                if (music.id == target.header.id) MusicPlayback.command(this@MainActivity,"STOP")
+                scope.launch {
+                    val removed = withContext(Dispatchers.IO) { target.directory.deleteRecursively() }
+                    if (!removed) error = "Не удалось удалить файл"
+                    refresh++
+                }
+            })
         }
     }
 }

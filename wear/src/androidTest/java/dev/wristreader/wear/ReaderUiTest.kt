@@ -11,6 +11,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.*
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.Modifier
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.wear.compose.material.MaterialTheme
 import dev.wristreader.shared.*
@@ -180,6 +185,32 @@ class ReaderUiTest {
         val image = i.uiAutomation.takeScreenshot()
         File(i.targetContext.cacheDir,name).outputStream().use { image.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }
         image.recycle()
+    }
+
+    @Test fun deletionIsModalAndCancelPreservesTheFile() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val file = File(context.cacheDir,"delete-fixture-${UUID.randomUUID()}").apply { writeText("keep on cancel") }
+        var show by mutableStateOf(true)
+        try {
+            rule.setContent { MaterialTheme {
+                Box(Modifier.fillMaxSize()) {
+                    val list = rememberLazyListState(initialFirstVisibleItemIndex = 35)
+                    LazyColumn(state = list,modifier = Modifier.fillMaxSize()) {
+                        items(80) { androidx.wear.compose.material.Text("Файл $it") }
+                    }
+                    if (show) DeleteFileDialog("Очень длинное имя документа для проверки удаления.pdf",{ show = false },{ file.delete(); show = false })
+                }
+            } }
+            rule.onNodeWithTag("delete-file-dialog").assertIsDisplayed()
+            rule.onNodeWithTag("confirm-file-delete").assertIsDisplayed()
+            rule.onNodeWithTag("cancel-file-delete").performClick()
+            rule.onNodeWithTag("delete-file-dialog").assertDoesNotExist()
+            assertTrue(file.exists())
+            rule.runOnIdle { show = true }
+            rule.onNodeWithTag("confirm-file-delete").performClick()
+            rule.onNodeWithTag("delete-file-dialog").assertDoesNotExist()
+            assertFalse(file.exists())
+        } finally { file.delete() }
     }
 
     @Test fun measuredPaginationPreservesEveryCharacter() {

@@ -12,13 +12,7 @@ import android.provider.OpenableColumns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -118,7 +112,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         model = ViewModelProvider(this)[MobileModel::class.java]
         if (savedInstanceState == null) sharedIntent(intent)
-        setContent { MaterialTheme(colorScheme = darkColorScheme()) { Screen() } }
+        setContent { PhoneTheme { Screen() } }
     }
     override fun onResume() { super.onResume(); refresh++ }
     override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); sharedIntent(intent) }
@@ -142,66 +136,34 @@ class MainActivity : ComponentActivity() {
     @Composable private fun Screen() {
         val current by TransferBus.current.collectAsState()
         val results by TransferBus.results.collectAsState()
-        var address by remember { mutableStateOf("") }
+        var address by remember { mutableStateOf(getSharedPreferences("phone",MODE_PRIVATE).getString("device","").orEmpty()) }
         val devices = remember(refresh) {
             if (BluetoothAccess.granted(this)) runCatching { BluetoothAccess.adapter(this)?.bondedDevices?.toList().orEmpty() }.getOrDefault(emptyList())
             else emptyList()
         }
-        Surface(Modifier.fillMaxSize()) {
-            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                item { Text("WristHub", style = MaterialTheme.typography.headlineLarge) }
-                item { Text("Файлы, музыка и приложения на запястье", style = MaterialTheme.typography.titleMedium) }
-                item { Text(remember(refresh) { BluetoothAccess.status(this@MainActivity) }) }
-                item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { authorize() }) { Text("Разрешения") }
-                    OutlinedButton(onClick = {
-                        if (BluetoothAccess.granted(this@MainActivity)) runCatching { enable.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)) }
-                            .onFailure { model.message = it.message ?: "Откройте настройки Bluetooth" }
-                        else authorize()
-                    }) { Text("Включить BT") }
-                } }
-                item { Text("1. Откройте WristHub на часах — приём включится сам.\n2. Выберите сопряжённые часы.\nДля APK и музыки обновите оба приложения до 2.0.") }
-                items(devices, key = { it.address }) { device ->
-                    FilterChip(selected = address == device.address, onClick = { address = device.address },
-                        label = { Text("${device.name ?: "Bluetooth"} • ${device.address}") })
-                }
-                if (devices.isEmpty()) item { Text("Нет сопряжённых устройств. Выполните сопряжение в системных настройках Bluetooth, затем вернитесь сюда.") }
-                item { Button(enabled = !model.preparing && !current.running,
-                    onClick = { picker.launch(arrayOf("*/*")) }) { Text("Выбрать файлы") } }
-                if (model.preparing) item { LinearProgressIndicator(Modifier.fillMaxWidth()); Text("Подготовка файлов…"); TextButton(onClick = { model.cancelImport() }) { Text("Отменить") } }
-                if (model.message.isNotEmpty()) item { Text(model.message, color = MaterialTheme.colorScheme.tertiary) }
-                item {
-                    Text(current.message)
-                    if (current.total > 0) {
-                        LinearProgressIndicator(progress = { current.done.toFloat() / current.total }, modifier = Modifier.fillMaxWidth())
-                        Text("${size(current.done)} / ${size(current.total)}")
-                    }
-                    if (current.running) TextButton(onClick = { startService(Intent(this@MainActivity, BluetoothService::class.java).setAction("STOP")) }) { Text("Отменить передачу") }
-                }
-                items(model.documents, key = { it.header.id }) { doc ->
-                    Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp)) {
-                        Text(doc.header.name, style = MaterialTheme.typography.titleMedium)
-                        Text("${size(doc.header.size)} • ${FileTypes.label(doc.header.mime)}")
-                        Text(results[doc.header.id] ?: "Готов к отправке")
-                        Row {
-                            TextButton(enabled = !current.running && address.isNotEmpty() && !model.preparing,
-                                onClick = { send(address, listOf(doc.header.id)) }) { Text("Отправить / повторить") }
-                            TextButton(enabled = !current.running, onClick = { model.remove(doc) }) { Text("Убрать") }
-                        }
-                    } }
-                }
-                if (model.documents.isNotEmpty()) item { Button(enabled = !current.running && !model.preparing && address.isNotEmpty(),
-                    onClick = { send(address, model.documents.map { it.header.id }) }) { Text("Отправить все") } }
-                item { Text("Только Bluetooth Classic. При обрыве отправка повторяется с начала. Файлы остаются в очереди до удаления.", style = MaterialTheme.typography.bodySmall) }
-            }
+        LaunchedEffect(devices) {
+            if (devices.none { it.address == address }) address = devices.singleOrNull()?.address.orEmpty()
         }
+        LaunchedEffect(address) { getSharedPreferences("phone",MODE_PRIVATE).edit().putString("device",address).apply() }
+        val granted = BluetoothAccess.granted(this)
+        val enabled = granted && BluetoothAccess.adapter(this)?.isEnabled == true
+        PhoneScreen(model.documents,devices.map { PhoneDevice(it.name ?: "Bluetooth",it.address) },address,
+            model.preparing,model.message,current,results,granted,enabled,
+            Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(this,Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED,
+            onDevice = { address = it },onPermissions = { authorize() },onBluetooth = {
+                if (granted) runCatching { enable.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)) }
+                    .onFailure { model.message = it.message ?: "Откройте настройки Bluetooth" }
+                else authorize()
+            },onAdd = { picker.launch(arrayOf("*/*")) },onCancelImport = { model.cancelImport() },
+            onSend = { ids -> send(address,ids) },onStop = { startService(Intent(this,BluetoothService::class.java).setAction("STOP")) },
+            onRemove = { model.remove(it) })
     }
     private fun send(address: String, ids: List<String>) {
         if (!BluetoothAccess.granted(this)) { authorize(); return }
         if (BluetoothAccess.adapter(this)?.isEnabled != true) { model.message = "Включите Bluetooth"; return }
+        ids.forEach { TransferBus.result(it,"В очереди") }
         runCatching { ContextCompat.startForegroundService(this, Intent(this, BluetoothService::class.java).setAction("SEND")
             .putExtra("address", address).putStringArrayListExtra("ids", ArrayList(ids))) }
             .onFailure { model.message = "Не удалось начать передачу: ${it.message}" }
     }
 }
-private fun size(n: Long) = "%.1f МиБ".format(n / 1048576.0)

@@ -22,12 +22,19 @@
 
 | Файл | Устройство | Версия |
 |---|---|---|
-| [WristHub-phone.apk](https://github.com/Hoccku22/WristHub/releases/latest/download/WristHub-phone.apk) | Телефон, Android 8.0+ | 2.0 |
-| [WristHub-watch.apk](https://github.com/Hoccku22/WristHub/releases/latest/download/WristHub-watch.apk) | Часы, Wear OS на Android 11+ | 2.0 |
+| [WristHub-phone.apk](https://github.com/Hoccku22/WristHub/releases/latest/download/WristHub-phone.apk) | Телефон, Android 8.0+ | 2.1 |
+| [WristHub-watch.apk](https://github.com/Hoccku22/WristHub/releases/latest/download/WristHub-watch.apk) | Часы, Wear OS на Android 11+ | 2.1 |
 
 **Раньше приложение называлось WristReader.** WristHub обновляется поверх него: библиотека и настройки сохраняются. Для новых типов файлов обнови оба приложения. Внутренние Android-идентификаторы остались прежними для совместимости.
 
 APK подписаны прежним debug-ключом. Это сборки для самостоятельной установки; контрольные суммы и исходники находятся в [Releases](https://github.com/Hoccku22/WristHub/releases).
+
+## Интерфейс 2.1
+
+На телефоне — файлы и фильтры, выбор нескольких позиций, общий размер и очередь отправки.
+Нижняя навигация ведёт к файлам, передачам, выбору часов и настройкам.
+На часах подтверждение удаления открывается отдельным диалогом поверх списка;
+позиция прокрутки больше не прячет кнопки. Полное обновление оформления часов ещё согласовывается.
 
 ## Один хаб — разные файлы
 
