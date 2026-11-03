@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalContext
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kotlin.math.sqrt
@@ -61,12 +63,15 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
 }
 
 @Composable private fun ZoomPicture(load: BitmapLoad, key: Any, s: ReaderSettings, locked: Boolean,
-    reset: Int, modifier: Modifier, step: (Int) -> Unit) {
+    reset: Int, modifier: Modifier, step: (Int) -> Unit, links: List<PdfLink> = emptyList(),
+    scrollAtBase: Boolean = false, onNavigate: (Int) -> Unit = {}) {
     BoxWithConstraints(modifier.clipToBounds()) {
         val bitmap = load.bitmap
         val initial = if (s.fitWidth && reset == 0 && bitmap != null)
             (maxWidth.value / maxHeight.value * bitmap.height / bitmap.width).coerceIn(1f,6f) else 1f
-        Picture(load, Modifier.fillMaxSize().zoomable(key,locked,s.vertical,step,initial))
+        Picture(load, Modifier.fillMaxSize().testTag("zoom-picture").zoomable(key,locked,s.vertical,step,initial,
+            contentAspect = bitmap?.let { it.width.toFloat() / it.height },
+            onPageTap = { point -> links.targetAt(point)?.let(onNavigate) }, scrollAtBase = scrollAtBase))
     }
 }
 
@@ -88,10 +93,18 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
     val progress = remember(doc.header.id,mode) { ReadingProgressState() }
     val isPdf = doc.header.mime == "application/pdf"
     val loaded = if (isPdf) pdf(doc, prefs) else PdfLoad()
+    val context = LocalContext.current.applicationContext
+    val links by produceState<List<List<PdfLink>>>(emptyList(),doc.header.id) {
+        if (isPdf) value = withContext(Dispatchers.IO) {
+            PDFBoxResourceLoader.init(context)
+            runCatching { readPdfLinks(doc.original) }.getOrDefault(emptyList())
+        }
+    }
     val bg = if (settings.dark) Color.Black else Color.White
     val fg = if (settings.dark) Color.White else Color.Black
     CompositionLocalProvider(LocalContentColor provides fg) {
-        BoxWithConstraints(Modifier.fillMaxSize().background(bg)) {
+        BoxWithConstraints(Modifier.fillMaxSize().background(bg).testTag(
+            if (isPdf && links.isNotEmpty()) "pdf-links-ready" else "reader")) {
             val safeX = maxWidth * 0.147f + settings.margin.dp
             val safeY = maxHeight * 0.147f
             // Элементы управления накладываются поверх, не сжимая страницу при открытии меню.
@@ -101,12 +114,12 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
                     loaded.error.isNotEmpty() -> Text("PDF не открыт: ${loaded.error}", Modifier.padding(safeX,safeY))
                     loaded.session == null -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                     mode == "feed" -> Box(Modifier.fillMaxSize().padding(horizontal = safeX, vertical = safeY)) {
-                        PdfFeed(doc, loaded.session, prefs, settings, locked,progress)
+                        PdfFeed(doc, loaded.session, prefs, settings, locked,progress,links)
                     }
                     mode == "text" -> Box(Modifier.fillMaxSize().padding(horizontal = safeX, vertical = safeY).padding(bottom = 8.dp)) {
                         TextReader(doc,prefs,settings,locked,progress) { mode = "slides" }
                     }
-                    else -> PdfSlides(doc, loaded.session, prefs, settings, locked, reset, !controls,progress)
+                    else -> PdfSlides(doc, loaded.session, prefs, settings, locked, reset, !controls,progress,links)
                 }
                 if (controls) {
                     Column(Modifier.align(Alignment.TopCenter).padding(horizontal = safeX).padding(top = safeY)
@@ -159,7 +172,7 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
 }
 
 @Composable private fun PdfSlides(doc: Document, session: PdfSession, prefs: ReaderPreferences,
-    s: ReaderSettings, locked: Boolean, reset: Int, showCounter: Boolean, progress: ReadingProgressState) {
+    s: ReaderSettings, locked: Boolean, reset: Int, showCounter: Boolean, progress: ReadingProgressState, links: List<List<PdfLink>>) {
     val position = remember(prefs,doc.header.id) { prefs.position(doc.header.id,"slides") }
     val restored by position.collectAsState(initial = null)
     if (restored == null) return
@@ -171,13 +184,14 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
     val load = pageBitmap(session,page)
     Box(Modifier.fillMaxSize().rotary { if (!locked) rotary.move(it,s.sensitivity,step) }) {
         RoundPageFrame(if (s.fitWidth && reset == 0) maxOf(1f,session.aspectRatios[page]) else session.aspectRatios[page],s.margin) {
-            ZoomPicture(load, "$page/$reset", s,locked,reset,Modifier.fillMaxSize(),step)
+            ZoomPicture(load, "$page/$reset", s,locked,reset,Modifier.fillMaxSize(),step,links.getOrElse(page) { emptyList() },
+                onNavigate = { page = it })
         }
         if (showCounter) Text("${page + 1} / ${session.count}", Modifier.align(Alignment.BottomCenter).offset(x = (-34).dp).padding(bottom = 14.dp), style = MaterialTheme.typography.caption2)
     }
 }
 
-@Composable private fun PdfFeed(doc: Document, session: PdfSession, prefs: ReaderPreferences, s: ReaderSettings, locked: Boolean, progress: ReadingProgressState) {
+@Composable private fun PdfFeed(doc: Document, session: PdfSession, prefs: ReaderPreferences, s: ReaderSettings, locked: Boolean, progress: ReadingProgressState, links: List<List<PdfLink>>) {
     val position = remember(prefs,doc.header.id) { prefs.position(doc.header.id,"feed") }
     val restored by position.collectAsState(initial = null)
     if (restored == null) return
@@ -191,7 +205,10 @@ data class BitmapLoad(val bitmap: Bitmap? = null, val error: String = "")
         items(session.count, key = { it }) { index ->
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 // Без фиксированной ячейки и её пустых полей; LazyColumn сам готовит соседние элементы.
-                Picture(pageBitmap(session,index,prefetch = false), Modifier.fillMaxWidth().aspectRatio(session.aspectRatios[index]).testTag("pdf-page-$index"))
+                ZoomPicture(pageBitmap(session,index,prefetch = false), "$index/feed",s.copy(fitWidth = false),locked,0,
+                    Modifier.fillMaxWidth().aspectRatio(session.aspectRatios[index]).testTag("pdf-page-$index"),{},
+                    links.getOrElse(index) { emptyList() },scrollAtBase = true,
+                    onNavigate = { target -> scope.launch { state.scrollToItem(target) } })
                 Text("${index + 1} / ${session.count}", style = MaterialTheme.typography.caption3)
             }
         }

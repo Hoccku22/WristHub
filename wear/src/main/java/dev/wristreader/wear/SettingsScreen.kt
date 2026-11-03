@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
             item { Chip(colors = ChipDefaults.chipColors(backgroundColor = WatchPanel),onClick = { onChange(s.copy(remember = !s.remember)) }, label = { Text(if (s.remember) "Позиция: сохранять" else "Позиция: с начала") }) }
             item { Chip(colors = ChipDefaults.chipColors(backgroundColor = WatchPanel),onClick = { onChange(s.copy(fitWidth = !s.fitWidth)) }, label = { Text(if (s.fitWidth) "PDF: по ширине" else "PDF: целиком") }) }
             item { Chip(colors = ChipDefaults.chipColors(backgroundColor = WatchPanel),onClick = { onChange(s.copy(textPaged = !s.textPaged)) }, label = { Text(if (s.textPaged) "Текст: страницы" else "Текст: лента") }) }
-            item { Text("WristHub 2.2",style = MaterialTheme.typography.caption3,color = WatchMuted) }
+            item { Text("WristHub 2.3",style = MaterialTheme.typography.caption3,color = WatchMuted) }
             item { Chip(colors = ChipDefaults.chipColors(backgroundColor = WatchPanel),onClick = onClose, label = { Text("Готово") }) }
         }
     }

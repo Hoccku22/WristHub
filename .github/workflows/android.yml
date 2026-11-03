@@ -30,7 +30,7 @@ jobs:
       - name: Build, tests and lint
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --console=plain :mobile:assembleDebug :wear:assembleDebug :wear:assembleDebugAndroidTest :shared:testDebugUnitTest :mobile:lintDebug :wear:lintDebug
+          ./gradlew --no-daemon --console=plain :mobile:assembleDebug :wear:assembleDebug :wear:assembleDebugAndroidTest :shared:testDebugUnitTest :wear:testDebugUnitTest :mobile:lintDebug :wear:lintDebug
       - name: APK and reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -41,5 +41,6 @@ jobs:
             mobile/build/outputs/apk/debug/*.apk
             wear/build/outputs/apk/debug/*.apk
             shared/build/reports/tests/
+            wear/build/reports/tests/
             mobile/build/reports/lint-results-debug.*
             wear/build/reports/lint-results-debug.*
